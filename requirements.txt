@@ -1,0 +1,15 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+qdrant-client>=1.7.0
+sentence-transformers>=2.6.0
+surya-ocr>=0.4.15
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
+langdetect>=1.0.9
+ollama>=0.1.6
+numpy>=1.24.0
+pydantic>=2.4.0
+aiofiles>=23.2.1
+pytesseract>=0.3.10
+python-dotenv>=1.0.0

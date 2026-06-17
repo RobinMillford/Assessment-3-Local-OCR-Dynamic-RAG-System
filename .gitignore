@@ -1,0 +1,9 @@
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+
+uploads/
+qdrant_storage/
+backend/uploads/
+backend/qdrant_storage/
