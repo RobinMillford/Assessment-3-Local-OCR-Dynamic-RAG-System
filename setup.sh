@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/.venv"
-OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:3b}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:0.5b}"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$SCRIPT_DIR/.uv-cache}"
 
 install_ollama() {
@@ -71,7 +71,7 @@ start_ollama() {
 }
 
 pull_ollama_model() {
-    echo "✅ Ollama found. Pulling $OLLAMA_MODEL model (~2.3 GB for qwen2.5:3b)..."
+    echo "✅ Ollama found. Pulling $OLLAMA_MODEL model (~400 MB for qwen2.5:0.5b)..."
     if ! ollama pull "$OLLAMA_MODEL"; then
         echo "⚠️  Could not pull $OLLAMA_MODEL."
         echo "   Try manually after starting Ollama:"

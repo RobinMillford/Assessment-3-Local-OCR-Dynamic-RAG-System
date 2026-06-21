@@ -12,6 +12,7 @@ Graceful degradation: if Ollama is not running, returns retrieved chunks
 without LLM generation (still useful for testing).
 """
 
+import os
 import logging
 from typing import List, Optional, Dict, Any
 
@@ -20,7 +21,9 @@ import vector_store as vs
 
 logger = logging.getLogger(__name__)
 
-OLLAMA_MODEL   = "qwen2.5:3b"     # ~2.3 GB — change to llama3.2:3b if preferred
+# Smallest viable bilingual (bn+en) model. ~400 MB, fastest local option.
+# Override with env var, e.g. OLLAMA_MODEL=qwen2.5:1.5b for better answer quality.
+OLLAMA_MODEL   = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
 MAX_CONTEXT    = 3000              # max characters fed to LLM context
 TOP_K_RETRIEVE = 5
 
@@ -128,6 +131,11 @@ def _generate_answer(query: str, context: str) -> tuple[str, str]:
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_message},
             ],
+            options  = {
+                "temperature": 0.2,   # deterministic, fewer tokens wasted
+                "num_predict": 512,   # cap answer length → faster response
+                "num_ctx"    : 4096,  # enough for context + query
+            },
         )
         answer = response["message"]["content"]
         logger.info(f"Ollama answered ({len(answer)} chars) via {OLLAMA_MODEL}")

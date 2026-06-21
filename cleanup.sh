@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:3b}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:0.5b}"
 
 DRY_RUN=false
 ASSUME_YES=false

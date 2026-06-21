@@ -25,12 +25,12 @@ supporting Bangla (Bengali) and English text.
 │  POST /search                                               │
 │    → embedder.py       (embed query)                        │
 │    → vector_store.py   (metadata filter + vector search)    │
-│    → rag_engine.py     (Ollama qwen2.5:3b)                  │
+│    → rag_engine.py     (Ollama qwen2.5:0.5b)                │
 └─────────────────────────────────────────────────────────────┘
          │ local file               │ local gRPC
 ┌────────▼────────┐        ┌────────▼────────┐
 │  Qdrant (local) │        │  Ollama (local) │
-│  qdrant_storage/│        │  qwen2.5:3b     │
+│  qdrant_storage/│        │  qwen2.5:0.5b   │
 └─────────────────┘        └─────────────────┘
 ```
 
@@ -47,7 +47,7 @@ supporting Bangla (Bengali) and English text.
 | PDF processing | PyMuPDF | Native text layer for digital PDFs (no OCR needed) |
 | Embeddings | `paraphrase-multilingual-MiniLM-L12-v2` | 384-dim, supports bn+en in same vector space, ~420 MB |
 | Vector store | Qdrant (local mode) | Metadata filtering runs at DB level (not post-filter) |
-| LLM | Ollama / qwen2.5:3b | Fully local, 2.3 GB, handles bilingual RAG |
+| LLM | Ollama / qwen2.5:0.5b | Fully local, ~400 MB, smallest + fastest bilingual RAG (set `OLLAMA_MODEL` env to swap up, e.g. `qwen2.5:1.5b` or `qwen2.5:3b` for better quality) |
 | Backend | FastAPI | REST API + serves frontend HTML |
 
 ---
@@ -76,7 +76,7 @@ brew install tesseract && brew install tesseract-lang   # macOS
 # setup.sh installs Ollama automatically on Linux, or with Homebrew on macOS.
 # Manual Linux install:
 curl -fsSL https://ollama.com/install.sh | sh
-ollama pull qwen2.5:3b
+ollama pull qwen2.5:0.5b
 ```
 
 ### 2. Start the server
@@ -97,6 +97,32 @@ http://localhost:8000/docs    ← Swagger API docs
 > **Note:** On first upload, Surya models (~2 GB) download automatically.
 > Subsequent uploads are fast.
 
+### 3a. Choosing the LLM (speed vs. quality)
+
+The RAG answer generator defaults to **`qwen2.5:0.5b`** (~400 MB) — the smallest
+bilingual (bn+en) model, chosen for fast local responses on modest hardware. No
+GPU required.
+
+Swap models with the `OLLAMA_MODEL` env var — no code change needed:
+
+```bash
+ollama pull qwen2.5:1.5b                              # bigger, better answers
+OLLAMA_MODEL=qwen2.5:1.5b python main.py
+```
+
+| Model | Size | Speed | Bangla answer quality |
+|---|---|---|---|
+| `qwen2.5:0.5b` (default) | ~400 MB | Fastest | Basic — terse, grounded in context |
+| `qwen2.5:1.5b` | ~1 GB | Fast | Better |
+| `qwen2.5:3b` | ~2.3 GB | Slow on CPU | Best |
+
+> Retrieval quality (embeddings + Qdrant search) is **independent** of this choice —
+> only answer *generation* changes. Going below 0.5b is not recommended: smaller
+> models lack Bengali support.
+
+Generation is tuned for speed in `rag_engine.py`: `num_predict=512` (caps answer
+length), `temperature=0.2` (deterministic), `num_ctx=4096`.
+
 ### 4. Cleanup
 
 Preview what would be removed:
@@ -105,7 +131,7 @@ Preview what would be removed:
 ./cleanup.sh --dry-run
 ```
 
-Remove project files, model caches, the `qwen2.5:3b` Ollama model, and Tesseract packages:
+Remove project files, model caches, the `qwen2.5:0.5b` Ollama model, and Tesseract packages:
 
 ```bash
 ./cleanup.sh --yes
